@@ -1,0 +1,519 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Geometri Hesaplayıcı - Kapsamlı Alan, Hacim ve Çevre Hesaplayıcısı
+Author: Python Geometri Hesaplayıcı
+Version: 1.0
+"""
+
+import math
+import json
+from datetime import datetime
+import os
+import sys
+
+class GeometryCalculator:
+    """Geometrik şekiller için alan, hacim ve çevre hesaplayıcısı"""
+    
+    def __init__(self):
+        self.pi = math.pi
+        self.calculations_history = []
+        print("🔢 Geometri Hesaplayıcı sistemi başlatıldı!")
+    
+    def calculate_square(self, side):
+        """Kare hesaplamaları"""
+        if side <= 0:
+            raise ValueError("Kenar uzunluğu pozitif olmalıdır")
+        
+        area = side ** 2
+        perimeter = 4 * side
+        
+        result = {
+            'shape': 'Kare',
+            'inputs': {'kenar': side},
+            'calculations': {
+                'alan': area,
+                'cevre': perimeter
+            },
+            'units': {
+                'alan': 'cm²',
+                'cevre': 'cm'
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def calculate_rectangle(self, length, width):
+        """Dikdörtgen hesaplamaları"""
+        if length <= 0 or width <= 0:
+            raise ValueError("Kenar uzunlukları pozitif olmalıdır")
+        
+        area = length * width
+        perimeter = 2 * (length + width)
+        
+        result = {
+            'shape': 'Dikdörtgen',
+            'inputs': {'uzunluk': length, 'genislik': width},
+            'calculations': {
+                'alan': area,
+                'cevre': perimeter
+            },
+            'units': {
+                'alan': 'cm²',
+                'cevre': 'cm'
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def calculate_circle(self, radius):
+        """Daire hesaplamaları"""
+        if radius <= 0:
+            raise ValueError("Yarıçap pozitif olmalıdır")
+        
+        area = self.pi * radius ** 2
+        circumference = 2 * self.pi * radius
+        
+        result = {
+            'shape': 'Daire',
+            'inputs': {'yaricap': radius},
+            'calculations': {
+                'alan': area,
+                'cevre': circumference
+            },
+            'units': {
+                'alan': 'cm²',
+                'cevre': 'cm'
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def calculate_triangle(self, base, height, side1=None, side2=None):
+        """Üçgen hesaplamaları"""
+        if base <= 0 or height <= 0:
+            raise ValueError("Taban ve yükseklik pozitif olmalıdır")
+        
+        area = (base * height) / 2
+        perimeter = None
+        
+        if side1 and side2 and side1 > 0 and side2 > 0:
+            perimeter = base + side1 + side2
+        
+        result = {
+            'shape': 'Üçgen',
+            'inputs': {'taban': base, 'yukseklik': height},
+            'calculations': {
+                'alan': area,
+                'cevre': perimeter if perimeter else 'Hesaplanamadı'
+            },
+            'units': {
+                'alan': 'cm²',
+                'cevre': 'cm' if perimeter else None
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        if side1 and side2:
+            result['inputs'].update({'kenar1': side1, 'kenar2': side2})
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def calculate_cube(self, side):
+        """Küp hesaplamaları"""
+        if side <= 0:
+            raise ValueError("Kenar uzunluğu pozitif olmalıdır")
+        
+        volume = side ** 3
+        surface_area = 6 * side ** 2
+        
+        result = {
+            'shape': 'Küp',
+            'inputs': {'kenar': side},
+            'calculations': {
+                'hacim': volume,
+                'yuzey_alani': surface_area
+            },
+            'units': {
+                'hacim': 'cm³',
+                'yuzey_alani': 'cm²'
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def calculate_sphere(self, radius):
+        """Küre hesaplamaları"""
+        if radius <= 0:
+            raise ValueError("Yarıçap pozitif olmalıdır")
+        
+        volume = (4/3) * self.pi * radius ** 3
+        surface_area = 4 * self.pi * radius ** 2
+        
+        result = {
+            'shape': 'Küre',
+            'inputs': {'yaricap': radius},
+            'calculations': {
+                'hacim': volume,
+                'yuzey_alani': surface_area
+            },
+            'units': {
+                'hacim': 'cm³',
+                'yuzey_alani': 'cm²'
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        self.calculations_history.append(result)
+        return result
+    
+    def save_calculation_to_file(self, result, filename=None):
+        """Hesaplama sonucunu dosyaya kaydet"""
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"hesaplama_{result['shape'].lower()}_{timestamp}.txt"
+        
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(f"{result['shape']} Hesaplama Sonuçları\n")
+                f.write("=" * 50 + "\n\n")
+                f.write(f"Hesaplama Tarihi: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n\n")
+                
+                f.write("Girilen Değerler:\n")
+                for key, value in result['inputs'].items():
+                    f.write(f"  {key.title()}: {value}\n")
+                
+                f.write("\nHesaplama Sonuçları:\n")
+                for key, value in result['calculations'].items():
+                    unit = result['units'].get(key, '')
+                    if isinstance(value, float):
+                        f.write(f"  {key.replace('_', ' ').title()}: {value:.2f} {unit}\n")
+                    else:
+                        f.write(f"  {key.replace('_', ' ').title()}: {value}\n")
+            
+            return filename
+        except Exception as e:
+            print(f"Dosya kaydetme hatası: {e}")
+            return None
+    
+    def save_history_to_json(self, filename="hesaplama_gecmisi.json"):
+        """Tüm hesaplama geçmişini JSON olarak kaydet"""
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(self.calculations_history, f, ensure_ascii=False, indent=2)
+            return filename
+        except Exception as e:
+            print(f"JSON kaydetme hatası: {e}")
+            return None
+    
+    def load_history_from_json(self, filename="hesaplama_gecmisi.json"):
+        """JSON dosyasından hesaplama geçmişini yükle"""
+        try:
+            if os.path.exists(filename):
+                with open(filename, 'r', encoding='utf-8') as f:
+                    self.calculations_history = json.load(f)
+                print(f"Geçmiş başarıyla yüklendi: {len(self.calculations_history)} kayıt")
+            else:
+                print(f"Dosya bulunamadı: {filename}")
+        except Exception as e:
+            print(f"JSON yükleme hatası: {e}")
+    
+    def print_result(self, result):
+        """Hesaplama sonucunu ekrana yazdır"""
+        print(f"\n✅ {result['shape']} Hesaplama Sonuçları")
+        print("=" * 50)
+        
+        print("\n📝 Girilen Değerler:")
+        for key, value in result['inputs'].items():
+            print(f"  • {key.title()}: {value}")
+        
+        print("\n📊 Sonuçlar:")
+        for key, value in result['calculations'].items():
+            unit = result['units'].get(key, '')
+            if isinstance(value, float):
+                print(f"  • {key.replace('_', ' ').title()}: {value:.2f} {unit}")
+            else:
+                print(f"  • {key.replace('_', ' ').title()}: {value}")
+        print()
+
+def main():
+    """Ana program"""
+    calculator = GeometryCalculator()
+    
+    # Geçmiş dosyası varsa yükle
+    calculator.load_history_from_json()
+    
+    print("\n🎯 Geometri Hesaplayıcı'ya Hoş Geldiniz!")
+    print("=" * 50)
+    
+    while True:
+        print("\n📐 Hesaplama Seçenekleri:")
+        print("  1️⃣  Kare (Alan ve Çevre)")
+        print("  2️⃣  Dikdörtgen (Alan ve Çevre)") 
+        print("  3️⃣  Daire (Alan ve Çevre)")
+        print("  4️⃣  Üçgen (Alan ve Çevre)")
+        print("  5️⃣  Küp (Hacim ve Yüzey Alanı)")
+        print("  6️⃣  Küre (Hacim ve Yüzey Alanı)")
+        print("  7️⃣  Geçmişi Görüntüle")
+        print("  8️⃣  Geçmişi Kaydet")
+        print("  9️⃣  Çıkış")
+        
+        try:
+            choice = input("\n🔢 Seçiminizi yapın (1-9): ").strip()
+            
+            if choice == '1':
+                print("\n🟦 KARE HESAPLAYICI")
+                print("-" * 20)
+                side = float(input("Kenar uzunluğunu girin (cm): "))
+                result = calculator.calculate_square(side)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '2':
+                print("\n📐 DİKDÖRTGEN HESAPLAYICI")
+                print("-" * 25)
+                length = float(input("Uzun kenar uzunluğunu girin (cm): "))
+                width = float(input("Kısa kenar uzunluğunu girin (cm): "))
+                result = calculator.calculate_rectangle(length, width)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '3':
+                print("\n⭕ DAİRE HESAPLAYICI")
+                print("-" * 20)
+                radius = float(input("Yarıçapı girin (cm): "))
+                result = calculator.calculate_circle(radius)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '4':
+                print("\n🔺 ÜÇGEN HESAPLAYICI")
+                print("-" * 20)
+                base = float(input("Taban uzunluğunu girin (cm): "))
+                height = float(input("Yüksekliği girin (cm): "))
+                
+                calc_perimeter = input("🤔 Çevre hesaplamak ister misiniz? (e/h): ")
+                side1, side2 = None, None
+                if calc_perimeter.lower() == 'e':
+                    side1 = float(input("Birinci kenar uzunluğunu girin (cm): "))
+                    side2 = float(input("İkinci kenar uzunluğunu girin (cm): "))
+                
+                result = calculator.calculate_triangle(base, height, side1, side2)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '5':
+                print("\n🧊 KÜP HESAPLAYICI")
+                print("-" * 18)
+                side = float(input("Kenar uzunluğunu girin (cm): "))
+                result = calculator.calculate_cube(side)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '6':
+                print("\n🌐 KÜRE HESAPLAYICI")
+                print("-" * 20)
+                radius = float(input("Yarıçapı girin (cm): "))
+                result = calculator.calculate_sphere(radius)
+                calculator.print_result(result)
+                
+                save = input("💾 Sonucu dosyaya kaydetmek ister misiniz? (e/h): ")
+                if save.lower() == 'e':
+                    filename = calculator.save_calculation_to_file(result)
+                    if filename:
+                        print(f"✅ Sonuç kaydedildi: {filename}")
+            
+            elif choice == '7':
+                if calculator.calculations_history:
+                    print("\n📊 HESAPLAMA GEÇMİŞİ")
+                    print("=" * 60)
+                    for i, calc in enumerate(calculator.calculations_history, 1):
+                        print(f"\n{i}. {calc['shape']} - {calc['timestamp'][:19].replace('T', ' ')}")
+                        for key, value in calc['calculations'].items():
+                            unit = calc['units'].get(key, '')
+                            if isinstance(value, float):
+                                print(f"   • {key.replace('_', ' ').title()}: {value:.2f} {unit}")
+                            else:
+                                print(f"   • {key.replace('_', ' ').title()}: {value}")
+                else:
+                    print("\n❌ Henüz hesaplama yapılmamış.")
+            
+            elif choice == '8':
+                if calculator.calculations_history:
+                    filename = calculator.save_history_to_json()
+                    if filename:
+                        print(f"✅ Geçmiş kaydedildi: {filename}")
+                        print(f"📈 Toplam {len(calculator.calculations_history)} hesaplama kaydedildi")
+                else:
+                    print("❌ Kaydedilecek geçmiş bulunamadı.")
+            
+            elif choice == '9':
+                print("\n👋 Program sonlandırılıyor...")
+                print("Hesaplayıcıyı kullandığınız için teşekkürler!")
+                
+                # Çıkış öncesi otomatik kaydet
+                if calculator.calculations_history:
+                    calculator.save_history_to_json()
+                    print("💾 Geçmiş otomatik olarak kaydedildi.")
+                
+                break
+            
+            else:
+                print("\n❌ Geçersiz seçim! Lütfen 1-9 arası bir sayı girin.")
+        
+        except ValueError as e:
+            print(f"\n❌ Hata: {e}")
+            print("💡 Lütfen geçerli bir sayı girin.")
+        except KeyboardInterrupt:
+            print("\n\n👋 Program kullanıcı tarafından sonlandırıldı.")
+            break
+        except Exception as e:
+            print(f"\n❌ Beklenmeyen hata: {e}")
+            print("🔄 Programa devam ediliyor...")
+
+# Flask Web Servisi
+try:
+    from flask import Flask, request, jsonify, send_from_directory
+    from flask_cors import CORS
+    
+    def create_web_app():
+        """Flask web uygulaması oluştur"""
+        app = Flask(__name__)
+        CORS(app)
+        calculator = GeometryCalculator()
+        
+        @app.route('/')
+        def index():
+            """Ana sayfa"""
+            try:
+                return send_from_directory('.', 'geometry_calculator.html')
+            except:
+                return """
+                <h1>Geometri Hesaplayıcı API</h1>
+                <p>geometry_calculator.html dosyası bulunamadı.</p>
+                <p>API Endpoints:</p>
+                <ul>
+                    <li>POST /api/calculate</li>
+                    <li>GET /api/history</li>
+                    <li>POST /api/save</li>
+                </ul>
+                """
+        
+        @app.route('/api/calculate', methods=['POST'])
+        def api_calculate():
+            """API hesaplama endpoint'i"""
+            try:
+                data = request.json
+                shape = data.get('shape')
+                
+                if shape == 'square':
+                    result = calculator.calculate_square(data['side'])
+                elif shape == 'rectangle':
+                    result = calculator.calculate_rectangle(data['length'], data['width'])
+                elif shape == 'circle':
+                    result = calculator.calculate_circle(data['radius'])
+                elif shape == 'triangle':
+                    result = calculator.calculate_triangle(
+                        data['base'], data['height'], 
+                        data.get('side1'), data.get('side2')
+                    )
+                elif shape == 'cube':
+                    result = calculator.calculate_cube(data['side'])
+                elif shape == 'sphere':
+                    result = calculator.calculate_sphere(data['radius'])
+                else:
+                    return jsonify({'error': 'Geçersiz şekil'}), 400
+                
+                return jsonify(result)
+            
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+            except KeyError as e:
+                return jsonify({'error': f'Eksik parametre: {str(e)}'}), 400
+            except Exception as e:
+                return jsonify({'error': f'Beklenmeyen hata: {str(e)}'}), 500
+        
+        @app.route('/api/history', methods=['GET'])
+        def api_history():
+            """Hesaplama geçmişini döndür"""
+            return jsonify({
+                'history': calculator.calculations_history,
+                'count': len(calculator.calculations_history)
+            })
+        
+        @app.route('/api/save', methods=['POST'])
+        def api_save():
+            """Hesaplama sonucunu dosyaya kaydet"""
+            try:
+                data = request.json
+                filename = calculator.save_calculation_to_file(data)
+                if filename:
+                    return jsonify({
+                        'filename': filename, 
+                        'message': 'Başarıyla kaydedildi'
+                    })
+                else:
+                    return jsonify({'error': 'Kaydetme işlemi başarısız'}), 500
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+        
+        return app
+    
+    def run_web_server():
+        """Web sunucusunu başlat"""
+        app = create_web_app()
+        print("\n🌐 Web sunucusu başlatılıyor...")
+        print("📱 Tarayıcınızda şu adresi açın: http://127.0.0.1:5000")
+        print("🛑 Sunucuyu durdurmak için Ctrl+C basın")
+        try:
+            app.run(debug=True, host='127.0.0.1', port=5000)
+        except KeyboardInterrupt:
+            print("\n👋 Web sunucusu durduruldu.")
+
+except ImportError:
+    print("⚠️  Flask kurulu değil. Web servisi kullanılamaz.")
+    print("📦 Flask kurmak için: pip install flask flask-cors")
+    
+    def run_web_server():
+        print("❌ Flask kurulu değil. Web servisi başlatılamıyor.")
+        print("📦 Kurulum: pip install flask flask-cors")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == 'web':
+        run_web_server()
+    else:
+        main()
